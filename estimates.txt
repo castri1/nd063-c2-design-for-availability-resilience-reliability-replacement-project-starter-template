@@ -1,0 +1,33 @@
+1. Minimum RTO for a single AZ outage
+
+Since the deployment of the Primary database was Multi AZ, there is already a standby db in another AZ. 
+Hence the RTO is practically 0, or at least the time that AWS needs to redirect the traffic to the standby instance.
+
+In this scenario we wont need any people available off-hour times.
+
+2. Minimum RTO for a single region outage.
+
+The RTO in this case is minimum since we already have a read replica in place in another region.
+If there's a region outage in the Primary region, we will have to promote the read replica of the Secondary
+region as a read-write database but also redirect all the traffic to this newly promoted db.
+
+So, the RTO can be at most one hour, but we will need to consider having people available at off-hour times.
+We'll also need a set of instructions and documentation to achieve the database promotion and traffic redicrection.
+
+3. Minimum RPO for a single AZ outage
+
+The maximum amount of time over which we can loose data in the setup that we have deployed for a single AZ outage is 0.
+Since we have provisioned a Multi-AZ DB Instance, Amazon RDS automatically creates a primary DB Instance and synchronously 
+replicates the data to a standby instance in a different AZ. In case of an infrastructure failure, Amazon RDS performs an automatic 
+failover to the standby replica so database operations can resume as soon as the failover is complete.
+
+Since the endpoint of the DB Instance remains the same after a failover, applications can resume operations without the need for
+manual administrative interventions.
+
+4. Minimum RPO for a single region outage
+If there's a region outage we will have to promote the db in the Secondary region as read-write database.
+The Secondary database in another region is asyncrhonously updated so the data is up to date, but in case of a failure we will loose some
+input data until the database is promoted as standalone database and until all applications change the db endpoint.
+
+In this case the RPO will behave similarly to the RTO for a single region outage and we will loose incoming data for about an hour or less
+if the the staff is alerted opportunely.
